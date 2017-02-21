@@ -16,12 +16,18 @@ public class TextBoxManager_Script : MonoBehaviour {
     public int endAtLine;
 
     public bool isActive;
+    public bool stopPlayerMovement;
+    public bool canMove;
 
-    //public PlayerController player;
+    private bool isTyping = false;
+    private bool cancelTyping = false;
+
+    public float typeSpeed;
+
+    public AudioSource grandpaVoiceSFX;
 
     private void Start()
     {
-        //player = FindObjectOfType<PlayerController>();
         if (textFile != null)
         {
             textLines = (textFile.text.Split('\n'));
@@ -44,16 +50,37 @@ public class TextBoxManager_Script : MonoBehaviour {
 
     private void Update()
     {
+
+        if(!canMove){
+            return;
+        }
+
         if (!isActive)
         {
             return;
         }
 
-        theText.text = textLines[currentLine];
+        //theText.text = textLines[currentLine];
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            currentLine += 1;
+            if(!isTyping)
+            {
+                currentLine += 1;
+
+                if (currentLine > endAtLine)
+                {
+                    DisableTextbox();
+                }
+                else
+                {
+                    StartCoroutine(TextScroll(textLines[currentLine]));
+                }
+            }
+           else if(isTyping && !cancelTyping)
+            {
+                cancelTyping = true;
+            }
         }
 
         if(currentLine > endAtLine)
@@ -62,13 +89,61 @@ public class TextBoxManager_Script : MonoBehaviour {
         }
     }
 
+
+    private IEnumerator TextScroll (string lineOfText)
+    {
+        //start with empty, then add one letter at a time to the textbox on screen
+        int letter = 0;
+        theText.text = "";
+        isTyping = true;
+        cancelTyping = false;
+        
+        //makes the letters appear on screen  by looping until no longer true
+        while(isTyping && !cancelTyping && (letter < lineOfText.Length - 1))
+        {
+            grandpaVoiceSFX.Play();
+            theText.text += lineOfText[letter];
+            letter += 1;
+            yield return new WaitForSeconds(typeSpeed);
+        }
+
+        theText.text = lineOfText;
+        isTyping = false;
+        cancelTyping = false;
+    }
+
     public void EnableTextbox()
     {
         textBox.SetActive(true);
+        isActive = true;
+
+
+        StartCoroutine(TextScroll(textLines[currentLine]));
     }
 
     public void DisableTextbox()
     {
         textBox.SetActive(false);
+        isActive = false;
+        //player.canMove = true;
+    }
+
+    public void EnableTextBox()
+    {
+        textBox.SetActive(true);
+    }
+
+    public void DisableTextBox()
+    {
+        textBox.SetActive(false);
+    }
+
+    public void ReloadScript(TextAsset theText)
+    {
+        if(theText != null)
+        {
+            textLines = new string[1]; //take the array of text lines that already exists, replace it with a new text file. Reduces unused indeces.
+            textLines = (theText.text.Split('\n'));
+        }
     }
 }
