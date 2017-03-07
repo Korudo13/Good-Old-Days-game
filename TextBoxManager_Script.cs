@@ -8,12 +8,18 @@ public class TextBoxManager_Script : MonoBehaviour {
     public GameObject textBox;
 
     public Text theText;
-
     public TextAsset[] textFile;
+
+    public AudioSource[] voiceSFX;
+    private int currentSFX;
+
     public string[] textLines;
 
+    public int currentTextFile;
     public int currentLine;
     public int endAtLine;
+
+    private int currentPersonTalking;
 
     public bool isActive;
     public bool stopPlayerMovement;
@@ -21,31 +27,21 @@ public class TextBoxManager_Script : MonoBehaviour {
 
     private bool isTyping = false;
     private bool cancelTyping = false;
+    public Color textColor1;
+    public Color textColor2;
 
     public float typeSpeed;
 
-    public AudioSource voiceSFX;
+    private void Awake()
+    {
+        currentTextFile = 0;
+    }
+
 
     private void Start()
     {
-        if (textFile != null)
-        {
-            textLines = (textFile[0].text.Split('\n'));
-        }
-
-        if(endAtLine == 0) //go to the final line, then stop
-        {
-            endAtLine = textLines.Length - 1;
-        }
-
-        if (isActive)
-        {
-            EnableTextbox();
-        }
-        else
-        {
-            DisableTextbox();
-        }
+        MonologueTalking();
+        theText.color = textColor1;
     }
 
     private void Update()
@@ -65,7 +61,7 @@ public class TextBoxManager_Script : MonoBehaviour {
         //makes the letters appear on screen  by looping until no longer true
         while(isTyping && !cancelTyping && (letter < lineOfText.Length - 1))
         {
-            voiceSFX.Play();
+            voiceSFX[currentSFX].Play();  
             theText.text += lineOfText[letter];
             letter += 1;
             yield return new WaitForSeconds(typeSpeed);
@@ -81,7 +77,6 @@ public class TextBoxManager_Script : MonoBehaviour {
         textBox.SetActive(true);
         isActive = true;
 
-
         StartCoroutine(TextScroll(textLines[currentLine]));
     }
 
@@ -89,7 +84,6 @@ public class TextBoxManager_Script : MonoBehaviour {
     {
         textBox.SetActive(false);
         isActive = false;
-        //player.canMove = true;
     }
 
     public void ReloadScript(TextAsset theText)
@@ -113,8 +107,6 @@ public class TextBoxManager_Script : MonoBehaviour {
             return;
         }
 
-        //theText.text = textLines[currentLine];
-
         if (Input.GetKeyDown(KeyCode.Return))
         {
             if (!isTyping)
@@ -123,7 +115,7 @@ public class TextBoxManager_Script : MonoBehaviour {
 
                 if (currentLine > endAtLine)
                 {
-                    DisableTextbox();
+                   //DisableTextbox();
                 }
                 else
                 {
@@ -138,7 +130,34 @@ public class TextBoxManager_Script : MonoBehaviour {
 
         if (currentLine > endAtLine)
         {
-            DisableTextbox();
+            currentTextFile = 1;
+            theText.color = textColor2;
+            currentSFX = 1;
+            currentLine = 0;
+            MonologueTalking();
         }
+    }
+
+    void MonologueTalking()
+    {
+        if (textFile != null)
+        {
+            textLines = (textFile[currentTextFile].text.Split('\n'));
+        }
+
+        if (endAtLine == 0) //go to the final line, then stop
+        {
+            endAtLine = textLines.Length - 1;
+        }
+
+        if (isActive)
+        {
+            EnableTextbox();
+        }
+
+        else
+         {
+            DisableTextbox();
+         }
     }
 }
