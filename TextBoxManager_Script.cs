@@ -46,22 +46,27 @@ public class TextBoxManager_Script : MonoBehaviour {
 
     private void Update()
     {
+        if (!canMove)
+        {
+            return;
+        }
+
         LoadNextTextFile();
     }
 
 
-    private IEnumerator TextScroll (string lineOfText)
+    private IEnumerator TextScroll(string lineOfText)
     {
         //start with empty, then add one letter at a time to the textbox on screen
         int letter = 0;
         theText.text = "";
         isTyping = true;
         cancelTyping = false;
-        
+
         //makes the letters appear on screen  by looping until no longer true
-        while(isTyping && !cancelTyping && (letter < lineOfText.Length - 1))
+        while (isTyping && !cancelTyping && (letter < lineOfText.Length - 1))
         {
-            voiceSFX[currentSFX].Play();  
+            voiceSFX[currentSFX].Play();
             theText.text += lineOfText[letter];
             letter += 1;
             yield return new WaitForSeconds(typeSpeed);
@@ -77,7 +82,7 @@ public class TextBoxManager_Script : MonoBehaviour {
         textBox.SetActive(true);
         isActive = true;
 
-        StartCoroutine(TextScroll(textLines[currentLine]));
+       StartCoroutine(TextScroll(textLines[currentLine]));
     }
 
     public void DisableTextbox()
@@ -88,7 +93,7 @@ public class TextBoxManager_Script : MonoBehaviour {
 
     public void ReloadScript(TextAsset theText)
     {
-        if(theText != null)
+        if (theText != null)
         {
             textLines = new string[1]; //take the array of text lines that already exists, replace it with a new text file. Reduces unused indeces.
             textLines = (theText.text.Split('\n'));
@@ -115,7 +120,7 @@ public class TextBoxManager_Script : MonoBehaviour {
 
                 if (currentLine > endAtLine)
                 {
-                   //DisableTextbox();
+                    //DisableTextbox();
                 }
                 else
                 {
@@ -156,8 +161,8 @@ public class TextBoxManager_Script : MonoBehaviour {
         }
 
         else
-         {
+        {
             DisableTextbox();
-         }
+        }
     }
 }
